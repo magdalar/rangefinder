@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">RangeFinder</string>
+    <string name="title_activity_select_target">Select Target</string>
+
+</resources>
