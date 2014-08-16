@@ -1,7 +1,5 @@
-rangefinder
-===========
-
-RangeFinder android app
+RangeFinder Android App
+=======================
 
 This app is primarily a test application for me to learn Android and Wear development.
 
@@ -14,10 +12,12 @@ the destination, as well as perhaps a directional indicator (NEWS, or compass be
 maybe even an overview map.
 
 Additional ideas:
-  - Reverse geocoding of the target; show the address.
-  - Perhaps even show place names.
-  - Select a destination by search.
-  - Select a destination by voice command, especially on Wear.
 
-Real strech ideas:
-  - Select a friend, and co-share locations to help meet people in crowds.
+   - Reverse geocoding of the target; show the address.
+   - Perhaps even show place names.
+   - Select a destination by search.
+   - Select a destination by voice command, especially on Wear.
+
+Real stretch ideas:
+
+   - Select a friend, and co-share locations to help meet people in crowds.
