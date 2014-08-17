@@ -31,7 +31,7 @@ public class SelectTargetActivity
   GooglePlayServicesClient.ConnectionCallbacks,
   GooglePlayServicesClient.OnConnectionFailedListener,
   LocationListener {
-  private static final String TAG = "net.magdalar.rangefinder.SelectTargetActivity";
+  private static final String TAG = SelectTargetActivity.class.getSimpleName();
 
   public static final int DEFAULT_ZOOM = 15;
 
@@ -42,7 +42,7 @@ public class SelectTargetActivity
 
   private final static int
     CONNECTION_FAILURE_RESOLUTION_REQUEST = 9000;
-  private static final int MAX_LOCATION_INTERVAL_MS = 30000;
+  private static final int MAX_LOCATION_INTERVAL_MS = 10 * 1000;
   private static final int MIN_LOCATION_INTERVAL_MS = 1000;
 
 
@@ -56,11 +56,12 @@ public class SelectTargetActivity
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
+    Log.d(TAG, "onCreate: bundle? " + (savedInstanceState != null));
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_select_target);
 
     // TODO: restore from bundle or sharedPreferences?
-    Location location = getLocation();
+    Location location = getInitialUserLocation();
     if (location != null) {
       targetLocation =
         new LatLng(location.getLatitude(), location.getLongitude());
@@ -72,20 +73,27 @@ public class SelectTargetActivity
 
   @Override
   protected void onPause() {
+    Log.d(TAG, "onPause");
     super.onPause();
   }
 
   @Override
   protected void onResume() {
+    Log.d(TAG, "onResume");
     super.onResume();
     setUpMapIfNeeded();
+    setUpLocationListener();
   }
 
   @Override
   protected void onStop() {
-    if (locationClient != null && locationClient.isConnected()) {
+    Log.d(TAG, "onStop");
+    if (locationClient != null &&
+        (locationClient.isConnected() || locationClient.isConnecting())) {
+      Log.d(TAG, "Disconnecting locationClient.");
       locationClient.removeLocationUpdates(this);
       locationClient.disconnect();
+      locationClient = null;
     }
     super.onStop();
   }
@@ -96,7 +104,6 @@ public class SelectTargetActivity
    */
   public void onConnected(Bundle bundle) {
     Log.d(TAG, "Play services connected.");
-    Toast.makeText(this, "Play Services Connected", Toast.LENGTH_SHORT).show();
     locationClient.requestLocationUpdates(locationRequest, this);
   }
 
@@ -106,7 +113,6 @@ public class SelectTargetActivity
    */
   public void onDisconnected() {
     Log.d(TAG, "Play services disconnected.");
-    Toast.makeText(this, "Play Services Disconnected.", Toast.LENGTH_SHORT).show();
     locationClient = null;
   }
 
@@ -115,6 +121,7 @@ public class SelectTargetActivity
    * When we've had a connection failure with play services.
    */
   public void onConnectionFailed(ConnectionResult connectionResult) {
+    Log.d(TAG, "onConnectionFailed: " + connectionResult.toString());
     // Google Play services can resolve some errors it detects.
     if (connectionResult.hasResolution()) {
       try {
@@ -170,13 +177,13 @@ public class SelectTargetActivity
 
   @Override
   public void onMarkerDragEnd(Marker m) {
-    updateLocation(m.getPosition());
+    updateMarkerLocation(m.getPosition());
   }
 
 
   @Override
   public void onMapClick(LatLng pos) {
-    updateLocation(pos);
+    updateMarkerLocation(pos);
   }
 
   @Override
@@ -184,21 +191,28 @@ public class SelectTargetActivity
     String msg = "Updated Location: " +
       Double.toString(location.getLatitude()) + "," +
       Double.toString(location.getLongitude());
+    Log.d(TAG, msg);
     Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
   }
 
   protected void setUpLocationListener() {
+    if (locationClient != null &&
+      (locationClient.isConnected() || locationClient.isConnecting())) {
+      Log.d(TAG, "locationClient already running.");
+      return;
+    }
+
+    Log.d(TAG, "Connecting locationClient.");
     locationClient = new LocationClient(this, this, this);
     locationClient.connect();
 
     locationRequest = LocationRequest.create();
     locationRequest.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
-    // TODO: may need to adjust this on the fly?
     locationRequest.setFastestInterval(MIN_LOCATION_INTERVAL_MS);
     locationRequest.setInterval(MAX_LOCATION_INTERVAL_MS);
   }
 
-  protected Location getLocation() {
+  protected Location getInitialUserLocation() {
     LocationManager lm = (LocationManager) getSystemService(LOCATION_SERVICE);
     String provider = lm.getBestProvider(new Criteria(), true);
     if (provider == null) {
@@ -207,7 +221,8 @@ public class SelectTargetActivity
     return lm.getLastKnownLocation(provider);
   }
 
-  private void updateLocation(LatLng pos) {
+  private void updateMarkerLocation(LatLng pos) {
+    Log.d(TAG, "Marked moved to: " + pos.toString());
     targetLocation = pos;
     if (!targetMarker.getPosition().equals(pos)) {
       targetMarker.setPosition(pos);
