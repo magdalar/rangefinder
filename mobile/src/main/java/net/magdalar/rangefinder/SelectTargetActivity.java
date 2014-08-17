@@ -9,6 +9,7 @@ import android.location.LocationManager;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.util.Log;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -24,6 +25,8 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
+import java.text.DecimalFormat;
+
 public class SelectTargetActivity
   extends FragmentActivity
   implements GoogleMap.OnMarkerDragListener,
@@ -32,6 +35,7 @@ public class SelectTargetActivity
   GooglePlayServicesClient.OnConnectionFailedListener,
   LocationListener {
   private static final String TAG = SelectTargetActivity.class.getSimpleName();
+  private static final DecimalFormat formatLatLng = new DecimalFormat("#.#####");
 
   public static final int DEFAULT_ZOOM = 15;
 
@@ -53,12 +57,14 @@ public class SelectTargetActivity
   private LatLng targetLocation = DEFAULT_START_LOCATION;
   private LocationRequest locationRequest = null;
   private LocationClient locationClient = null;
+  private TextView targetTextView = null;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     Log.d(TAG, "onCreate: bundle? " + (savedInstanceState != null));
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_select_target);
+    targetTextView = (TextView) findViewById(R.id.location_details);
 
     // TODO: restore from bundle or sharedPreferences?
     Location location = getInitialUserLocation();
@@ -189,8 +195,9 @@ public class SelectTargetActivity
   @Override
   public void onLocationChanged(Location location) {
     String msg = "Updated Location: " +
-      Double.toString(location.getLatitude()) + "," +
-      Double.toString(location.getLongitude());
+      formatLatLng.format(location.getLatitude())
+      + ", "
+      + formatLatLng.format(location.getLongitude());
     Log.d(TAG, msg);
     Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
   }
@@ -222,7 +229,12 @@ public class SelectTargetActivity
   }
 
   private void updateMarkerLocation(LatLng pos) {
-    Log.d(TAG, "Marked moved to: " + pos.toString());
+    CharSequence target =
+      formatLatLng.format(pos.latitude)
+        + ", "
+        + formatLatLng.format(pos.longitude);
+    Log.d(TAG, "Marked moved to: " + target);
+    targetTextView.setText(target);
     targetLocation = pos;
     if (!targetMarker.getPosition().equals(pos)) {
       targetMarker.setPosition(pos);
