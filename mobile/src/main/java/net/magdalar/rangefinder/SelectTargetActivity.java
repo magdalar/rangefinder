@@ -36,7 +36,6 @@ public class SelectTargetActivity
   private static final String TAG = SelectTargetActivity.class.getSimpleName();
 
   private static final DecimalFormat formatLatLng = new DecimalFormat("#.#####");
-  private static final DecimalFormat formatDistance = new DecimalFormat("0");
   private static final DecimalFormat formatBearing = new DecimalFormat("0.#");
 
 
@@ -249,7 +248,18 @@ public class SelectTargetActivity
   }
 
   private String formatDistance(double distance) {
-    return formatDistance.format(distance) + "m";
+    String pattern = "0";
+    String suffix = "m";
+    if (distance > 1000) {
+      distance /= 1000.0;
+      suffix = "km";
+      if (distance > 10) {
+        pattern = "#,###";
+      } else {
+        pattern = "0.0";
+      }
+    }
+    return new DecimalFormat(pattern).format(distance) + suffix;
   }
 
   private String formatBearing(double bearing) {
