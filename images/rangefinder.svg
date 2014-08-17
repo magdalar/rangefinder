@@ -1,0 +1,57 @@
+<?xml version="1.0"?>
+<svg width="640" height="480" xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg">
+ <!-- Created with SVG-edit - http://svg-edit.googlecode.com/ -->
+ <defs>
+  <radialGradient spreadMethod="pad" id="svg_1">
+   <stop offset="0" stop-color="#ff0000"/>
+   <stop offset="1" stop-color="#00ffff"/>
+  </radialGradient>
+  <linearGradient spreadMethod="pad" id="svg_2">
+   <stop offset="0" stop-color="#ff0000"/>
+   <stop offset="1" stop-color="#00ffff"/>
+  </linearGradient>
+  <linearGradient y2="1" x2="1" y1="0" x1="0" spreadMethod="pad" id="svg_3">
+   <stop offset="0" stop-color="#ff0000"/>
+   <stop offset="1" stop-color="#00ffff"/>
+  </linearGradient>
+  <linearGradient y2="1" x2="1" y1="1" x1="0" spreadMethod="pad" id="svg_5">
+   <stop offset="0" stop-color="#ff0000"/>
+   <stop offset="1" stop-color="#00ffff"/>
+  </linearGradient>
+  <linearGradient y2="0" x2="1" y1="1" x1="0" spreadMethod="pad" id="svg_6">
+   <stop offset="0" stop-color="#ff0000"/>
+   <stop offset="1" stop-color="#00ffff"/>
+  </linearGradient>
+  <linearGradient y2="0.992188" x2="0" y1="0" x1="1" spreadMethod="pad" id="svg_7">
+   <stop offset="0" stop-color="#ff0000"/>
+   <stop offset="1" stop-color="#00ffff"/>
+  </linearGradient>
+  <linearGradient y2="0.992188" x2="0" y1="0.007813" x1="0.784424" spreadMethod="pad" id="svg_8">
+   <stop offset="0" stop-color="#ff0000"/>
+   <stop offset="1" stop-color="#00ffff"/>
+  </linearGradient>
+  <linearGradient y2="1" x2="0.5" y1="0" x1="0.5" spreadMethod="pad" id="svg_9">
+   <stop offset="0" stop-color="#ff0000"/>
+   <stop offset="1" stop-color="#00ffff"/>
+  </linearGradient>
+  <linearGradient y2="1" x2="0.5" y1="0" x1="0.5" spreadMethod="pad" id="svg_11">
+   <stop offset="0" stop-color="#ff0000"/>
+   <stop offset="1" stop-opacity="0.996094" stop-color="#000000"/>
+  </linearGradient>
+  <linearGradient y2="0.5" x2="0.5" y1="0" x1="0.5" spreadMethod="pad" id="svg_12">
+   <stop offset="0" stop-color="#ff0000"/>
+   <stop offset="1" stop-opacity="0.996094" stop-color="#000000"/>
+  </linearGradient>
+  <linearGradient y2="0.6" x2="0.5" y1="0" x1="0.5" spreadMethod="pad" id="svg_13">
+   <stop offset="0" stop-opacity="0.996094" stop-color="#ff5656"/>
+   <stop offset="1" stop-opacity="0.996094" stop-color="#000000"/>
+  </linearGradient>
+ </defs>
+ <g>
+  <title>RangeFinder</title>
+  <circle fill="#ffffff" stroke="#000000" stroke-width="20" cx="183" cy="181" r="161.755981" id="svg_4" fill-opacity="0.01"/>
+  <polygon id="svg_10" fill="#ffffff" points="183,134.1622314453125 196.24771118164062,167.7522735595703 229.8377685546875,181.00001525878906 196.24771118164062,194.24774169921875 183,227.8377685546875 169.75228881835938,194.24774169921875 136.1622314453125,181.00001525878906 169.75228881835938,167.7522735595703 183,134.1622314453125 196.24771118164062,167.7522735595703 " stroke="#000000" stroke-width="20"/>
+  <path transform="rotate(30 182.99993896484384,180.99993896484372) " stroke="url(#svg_13)" fill="none" stroke-width="6" stroke-dasharray="null" stroke-linejoin="null" stroke-linecap="null" d="m167.459229,180.999969l15.540802,-135.658981l15.540619,135.658981l-15.540619,135.658936l-15.540802,-135.658936z" id="svg_16"/>
+  <text transform="matrix(3.0163579284601876,0,0,2.5719984915430985,-755.1342234917961,-545.6300871914899) " stroke="url(#svg_13)" font-style="italic" font-weight="bold" xml:space="preserve" text-anchor="middle" font-family="Fantasy" font-size="24" id="svg_14" y="326.780708" x="328.917936" stroke-linecap="null" stroke-linejoin="null" stroke-dasharray="null" stroke-width="0" fill="#000000">RF</text>
+ </g>
+</svg>
