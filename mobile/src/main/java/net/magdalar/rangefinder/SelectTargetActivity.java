@@ -41,8 +41,6 @@ public class SelectTargetActivity
   LocationListener {
   private static final String TAG = SelectTargetActivity.class.getSimpleName();
 
-  private static final DecimalFormat formatLatLng = new DecimalFormat("#.#####");
-
   public static final int DEFAULT_ZOOM = 15;
 
   /**
@@ -217,12 +215,12 @@ public class SelectTargetActivity
 
   @Override
   public void onLocationChanged(Location l) {
-    Log.d(TAG, "Updated Location: " + formatLatLng(l));
+    //Log.d(TAG, "Updated Location: " + formatLatLng(l));
     userLocation = l;
     updateTextViews();
   }
 
-  private void updateNotification(String dist, String bearing) {
+  private void updateNotification(String shortStr, String fullStr) {
     // Ensure that navigating backward from the Activity leads out of
     // your application to the Home screen.
     Intent intent = new Intent(this, SelectTargetActivity.class);
@@ -239,6 +237,13 @@ public class SelectTargetActivity
 //    PendingIntent pendingIntent =
 //      PendingIntent.getActivity(this, 0, intent, 0);
 
+    NotificationCompat.BigTextStyle secondPageStyle =
+      new NotificationCompat.BigTextStyle()
+        .bigText(fullStr);
+    Notification secondPageNotification =
+      new NotificationCompat.Builder(this)
+        .setStyle(secondPageStyle)
+        .build();
 
     NotificationCompat.WearableExtender wearableExtender =
       new NotificationCompat.WearableExtender()
@@ -246,7 +251,8 @@ public class SelectTargetActivity
           BitmapFactory.decodeResource(
             getResources(), R.drawable.ic_launcher))
         .setContentIcon(R.drawable.icon_black)
-        .setHintHideIcon(true);
+        .setHintHideIcon(true)
+        .addPage(secondPageNotification);
 
     // TODO: the notification updates too frequently, and looks bad when it does so.
     // TODO: Figure out a less noticeable way to update it.
@@ -254,7 +260,7 @@ public class SelectTargetActivity
       new NotificationCompat.Builder(this)
         .setSmallIcon(R.drawable.ic_launcher)
         .setContentTitle("Range Finder")
-        .setContentText(dist + " " + bearing)
+        .setContentText(shortStr)
         .setContentIntent(pendingIntent)
         .extend(wearableExtender)
         .build();
@@ -268,11 +274,8 @@ public class SelectTargetActivity
     assert userLocation != null;
     assert targetLatLng != null;
 
-    String userLocStr = "Current: " + formatLatLng(userLocation);
-    userLocationTextView.setText(userLocStr);
-
-    String targetLocStr = "Target: " + formatLatLng(targetLatLng);
-    targetLocationTextView.setText(targetLocStr);
+    userLocationTextView.setText("Current: " + formatLatLng(userLocation));
+    targetLocationTextView.setText("Target: " + formatLatLng(targetLatLng));
 
     float[] results = new float[2];
     Location.distanceBetween(
@@ -286,7 +289,13 @@ public class SelectTargetActivity
     String bearingStr = "Bearing: " + formatBearing(results[1]);
     bearingTextView.setText(bearingStr);
 
-    updateNotification(distStr, bearingStr);
+    String shortStr = formatDistance(results[0]) + " " + formatBearing(results[1]);
+    String fullStr =
+      "Current: " + formatLatLng(userLocation, "#.###") + "\n"
+      + "Target: " + formatLatLng(targetLatLng, "#.###") + "\n"
+      + distStr + "\n"
+      + bearingStr;
+    updateNotification(shortStr, fullStr);
   }
 
   private void updateMarkerLocation(LatLng pos) {
@@ -330,21 +339,30 @@ public class SelectTargetActivity
       "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW",
       "N"};
     String cardinal = directions[(int) Math.floor(((bearing + 11.25) % 360) / 22.5)];
-    return cardinal + " (" + new DecimalFormat("0.#").format(bearing) + " deg)";
+    return new DecimalFormat("0").format(bearing) + "° " + cardinal;
   }
 
   private String formatLatLng(Location pos) {
-    return formatLatLng(pos.getLatitude(), pos.getLongitude());
+    return formatLatLng(pos, "#.####");
+  }
+
+  private String formatLatLng(Location pos, String pattern) {
+    return formatLatLng(pos.getLatitude(), pos.getLongitude(), pattern);
   }
 
   private String formatLatLng(LatLng pos) {
-    return formatLatLng(pos.latitude, pos.longitude);
+    return formatLatLng(pos, "#.####");
   }
 
-  private String formatLatLng(double lat, double lng) {
-    return formatLatLng.format(lat)
+  private String formatLatLng(LatLng pos, String pattern) {
+    return formatLatLng(pos.latitude, pos.longitude, pattern);
+  }
+
+  private String formatLatLng(double lat, double lng, String pattern) {
+    DecimalFormat formatter = new DecimalFormat(pattern);
+    return formatter.format(lat)
       + ", "
-      + formatLatLng.format(lng);
+      + formatter.format(lng);
   }
 
   protected void setUpLocationListener() {
