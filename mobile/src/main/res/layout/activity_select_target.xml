@@ -8,9 +8,17 @@
 
     <!-- TODO: Figure out how to get text below the map fragment. -->
     <TextView
-        android:id="@+id/location_details"
-        style="@style/LocationText"
-        android:text="@string/select_target"/>
+        android:id="@+id/user_location_text"
+        style="@style/LocationText"/>
+    <TextView
+        android:id="@+id/target_location_text"
+        style="@style/LocationText"/>
+    <TextView
+        android:id="@+id/distance_text"
+        style="@style/LocationText"/>
+    <TextView
+        android:id="@+id/bearing_text"
+        style="@style/LocationText"/>
 
     <fragment
         android:id="@+id/map"

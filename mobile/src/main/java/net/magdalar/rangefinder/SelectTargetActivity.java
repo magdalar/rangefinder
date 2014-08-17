@@ -10,7 +10,6 @@ import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesClient;
@@ -35,7 +34,11 @@ public class SelectTargetActivity
   GooglePlayServicesClient.OnConnectionFailedListener,
   LocationListener {
   private static final String TAG = SelectTargetActivity.class.getSimpleName();
+
   private static final DecimalFormat formatLatLng = new DecimalFormat("#.#####");
+  private static final DecimalFormat formatDistance = new DecimalFormat("0");
+  private static final DecimalFormat formatBearing = new DecimalFormat("0.#");
+
 
   public static final int DEFAULT_ZOOM = 15;
 
@@ -54,23 +57,35 @@ public class SelectTargetActivity
   private GoogleMap mMap = null;
 
   private Marker targetMarker = null;
-  private LatLng targetLocation = DEFAULT_START_LOCATION;
+
+  private LatLng targetLatLng = DEFAULT_START_LOCATION;
+  private Location userLocation = null;
+
   private LocationRequest locationRequest = null;
   private LocationClient locationClient = null;
-  private TextView targetTextView = null;
+
+  private TextView userLocationTextView = null;
+  private TextView targetLocationTextView = null;
+  private TextView distanceTextView = null;
+  private TextView bearingTextView = null;
+
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     Log.d(TAG, "onCreate: bundle? " + (savedInstanceState != null));
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_select_target);
-    targetTextView = (TextView) findViewById(R.id.location_details);
 
-    // TODO: restore from bundle or sharedPreferences?
-    Location location = getInitialUserLocation();
-    if (location != null) {
-      targetLocation =
-        new LatLng(location.getLatitude(), location.getLongitude());
+    userLocationTextView = (TextView) findViewById(R.id.user_location_text);
+    targetLocationTextView = (TextView) findViewById(R.id.target_location_text);
+    distanceTextView = (TextView) findViewById(R.id.distance_text);
+    bearingTextView = (TextView) findViewById(R.id.bearing_text);
+
+    userLocation = getInitialUserLocation();
+    if (userLocation != null) {
+      // TODO: restore targetLatLng from bundle or sharedPreferences?
+      targetLatLng =
+        new LatLng(userLocation.getLatitude(), userLocation.getLongitude());
     }
 
     setUpMapIfNeeded();
@@ -193,13 +208,66 @@ public class SelectTargetActivity
   }
 
   @Override
-  public void onLocationChanged(Location location) {
-    String msg = "Updated Location: " +
-      formatLatLng.format(location.getLatitude())
+  public void onLocationChanged(Location l) {
+    Log.d(TAG, "Updated Location: " + formatLatLng(l));
+    userLocation = l;
+    updateTextViews();
+  }
+
+  private void updateTextViews() {
+    assert userLocation != null;
+    assert targetLatLng != null;
+
+    String userLocStr = "Current: " + formatLatLng(userLocation);
+    userLocationTextView.setText(userLocStr);
+
+    String targetLocStr = "Target: " + formatLatLng(targetLatLng);
+    targetLocationTextView.setText(targetLocStr);
+
+    float[] results = new float[2];
+    Location.distanceBetween(
+      userLocation.getLatitude(), userLocation.getLongitude(),
+      targetLatLng.latitude, targetLatLng.longitude,
+      results);
+
+    String distStr = "Distance: " + formatDistance(results[0]);
+    distanceTextView.setText(distStr);
+
+    String bearingStr = "Bearing: " + formatBearing(results[1]);
+    bearingTextView.setText(bearingStr);
+  }
+
+  private void updateMarkerLocation(LatLng pos) {
+    Log.d(TAG, "Marked moved to: " + formatLatLng(pos));
+    targetLatLng = pos;
+    if (!targetMarker.getPosition().equals(pos)) {
+      targetMarker.setPosition(pos);
+    }
+    mMap.animateCamera(CameraUpdateFactory.newLatLng(pos));
+
+    updateTextViews();
+  }
+
+  private String formatDistance(double distance) {
+    return formatDistance.format(distance) + "m";
+  }
+
+  private String formatBearing(double bearing) {
+    return formatBearing.format(bearing) + " deg";
+  }
+
+  private String formatLatLng(Location pos) {
+    return formatLatLng(pos.getLatitude(), pos.getLongitude());
+  }
+
+  private String formatLatLng(LatLng pos) {
+    return formatLatLng(pos.latitude, pos.longitude);
+  }
+
+  private String formatLatLng(double lat, double lng) {
+    return formatLatLng.format(lat)
       + ", "
-      + formatLatLng.format(location.getLongitude());
-    Log.d(TAG, msg);
-    Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
+      + formatLatLng.format(lng);
   }
 
   protected void setUpLocationListener() {
@@ -228,20 +296,6 @@ public class SelectTargetActivity
     return lm.getLastKnownLocation(provider);
   }
 
-  private void updateMarkerLocation(LatLng pos) {
-    CharSequence target =
-      formatLatLng.format(pos.latitude)
-        + ", "
-        + formatLatLng.format(pos.longitude);
-    Log.d(TAG, "Marked moved to: " + target);
-    targetTextView.setText(target);
-    targetLocation = pos;
-    if (!targetMarker.getPosition().equals(pos)) {
-      targetMarker.setPosition(pos);
-    }
-    mMap.animateCamera(CameraUpdateFactory.newLatLng(pos));
-  }
-
   /**
    * Set up the map interactions.
    *
@@ -256,10 +310,10 @@ public class SelectTargetActivity
 
     targetMarker = mMap.addMarker(
       new MarkerOptions()
-        .position(targetLocation)
+        .position(targetLatLng)
         .draggable(true));
 
-    mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(targetLocation, DEFAULT_ZOOM));
+    mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(targetLatLng, DEFAULT_ZOOM));
   }
 
 }
