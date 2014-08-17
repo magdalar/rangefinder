@@ -1,13 +1,19 @@
 package net.magdalar.rangefinder;
 
 import android.app.Activity;
+import android.app.Notification;
+import android.app.PendingIntent;
 import android.content.Intent;
 import android.content.IntentSender;
+import android.graphics.BitmapFactory;
 import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.NotificationCompat;
+import android.support.v4.app.NotificationManagerCompat;
+import android.support.v4.app.TaskStackBuilder;
 import android.util.Log;
 import android.widget.TextView;
 
@@ -36,8 +42,6 @@ public class SelectTargetActivity
   private static final String TAG = SelectTargetActivity.class.getSimpleName();
 
   private static final DecimalFormat formatLatLng = new DecimalFormat("#.#####");
-  private static final DecimalFormat formatBearing = new DecimalFormat("0.#");
-
 
   public static final int DEFAULT_ZOOM = 15;
 
@@ -46,8 +50,8 @@ public class SelectTargetActivity
    */
   public static final LatLng DEFAULT_START_LOCATION = new LatLng(0, 0);
 
-  private final static int
-    CONNECTION_FAILURE_RESOLUTION_REQUEST = 9000;
+  private static final int CONNECTION_FAILURE_RESOLUTION_REQUEST = 9000;
+  private static final int NOTIFICATION_ID = 1;
   private static final int MAX_LOCATION_INTERVAL_MS = 10 * 1000;
   private static final int MIN_LOCATION_INTERVAL_MS = 1000;
 
@@ -115,6 +119,11 @@ public class SelectTargetActivity
       locationClient.disconnect();
       locationClient = null;
     }
+
+    NotificationManagerCompat notificationManager =
+      NotificationManagerCompat.from(this);
+    notificationManager.cancel(NOTIFICATION_ID);
+
     super.onStop();
   }
 
@@ -213,6 +222,48 @@ public class SelectTargetActivity
     updateTextViews();
   }
 
+  private void updateNotification(String dist, String bearing) {
+    // Ensure that navigating backward from the Activity leads out of
+    // your application to the Home screen.
+    Intent intent = new Intent(this, SelectTargetActivity.class);
+    TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
+    // Adds the back stack for the Intent (but not the Intent itself)
+    stackBuilder.addParentStack(SelectTargetActivity.class);
+    // Adds the Intent that starts the Activity to the top of the stack
+    stackBuilder.addNextIntent(intent);
+    PendingIntent pendingIntent =
+      stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
+
+// TODO: possibly simpler variant from the Wear docs... how do they differ?
+//    Intent intent = new Intent(this, SelectTargetActivity.class);
+//    PendingIntent pendingIntent =
+//      PendingIntent.getActivity(this, 0, intent, 0);
+
+
+    NotificationCompat.WearableExtender wearableExtender =
+      new NotificationCompat.WearableExtender()
+        .setBackground(
+          BitmapFactory.decodeResource(
+            getResources(), R.drawable.ic_launcher))
+        .setContentIcon(R.drawable.icon_black)
+        .setHintHideIcon(true);
+
+    // TODO: the notification updates too frequently, and looks bad when it does so.
+    // TODO: Figure out a less noticeable way to update it.
+    Notification notification =
+      new NotificationCompat.Builder(this)
+        .setSmallIcon(R.drawable.ic_launcher)
+        .setContentTitle("Range Finder")
+        .setContentText(dist + " " + bearing)
+        .setContentIntent(pendingIntent)
+        .extend(wearableExtender)
+        .build();
+
+    NotificationManagerCompat notificationManager =
+      NotificationManagerCompat.from(this);
+    notificationManager.notify(NOTIFICATION_ID, notification);
+  }
+
   private void updateTextViews() {
     assert userLocation != null;
     assert targetLatLng != null;
@@ -234,6 +285,8 @@ public class SelectTargetActivity
 
     String bearingStr = "Bearing: " + formatBearing(results[1]);
     bearingTextView.setText(bearingStr);
+
+    updateNotification(distStr, bearingStr);
   }
 
   private void updateMarkerLocation(LatLng pos) {
@@ -277,7 +330,7 @@ public class SelectTargetActivity
       "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW",
       "N"};
     String cardinal = directions[(int) Math.floor(((bearing + 11.25) % 360) / 22.5)];
-    return cardinal + " (" + formatBearing.format(bearing) + " deg)";
+    return cardinal + " (" + new DecimalFormat("0.#").format(bearing) + " deg)";
   }
 
   private String formatLatLng(Location pos) {
