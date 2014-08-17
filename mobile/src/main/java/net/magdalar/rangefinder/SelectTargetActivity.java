@@ -253,7 +253,21 @@ public class SelectTargetActivity
   }
 
   private String formatBearing(double bearing) {
-    return formatBearing.format(bearing) + " deg";
+    if (bearing < 0 && bearing > -180) {
+      // Normalize to [0,360]
+      bearing = 360.0 + bearing;
+    }
+    if (bearing > 360 || bearing < -180) {
+      Log.e(TAG, "Invalid bearing: " + bearing);
+      return "Unknown";
+    }
+
+    String directions[] = {
+      "N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE",
+      "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW",
+      "N"};
+    String cardinal = directions[(int) Math.floor(((bearing + 11.25) % 360) / 22.5)];
+    return cardinal + " (" + formatBearing.format(bearing) + " deg)";
   }
 
   private String formatLatLng(Location pos) {
